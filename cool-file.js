@@ -74,11 +74,112 @@ AFRAME.registerComponent('reset-pos', {
   tick: function () {
     if(this.el.getAttribute('position').z >= this.data.limit) {
       this.el.setAttribute('position', { x: 0, y: 0, z: this.data.next.getAttribute('position').z-this.data.length });
-      console.log('This is ' + this.el.getAttribute('id') + ' at ' + this.el.getAttribute('position').z+',behind ' + this.data.next.getAttribute('id') + ' at ' + this.data.next.getAttribute('position').z);
+      //console.log('This is ' + this.el.getAttribute('id') + ' at ' + this.el.getAttribute('position').z+',behind ' + this.data.next.getAttribute('id') + ' at ' + this.data.next.getAttribute('position').z);
     }
     
   }
 });
+
+
+function endGame() {
+  
+  console.log('added')
+  
+  var camera = document.querySelector('#camera');
+  var sceneEl = document.querySelector('a-scene');
+  
+  var endScreenEl = document.createElement('a-text');
+
+  // give it some values 
+  //obsEl.setAttribute('geometry', { primitive: 'box', width: this.data.size, height: this.data.size, depth: this.data.size});
+  endScreenEl.setAttribute('geometry', { primitive: 'plane', width: 1.5, height: .6});
+  endScreenEl.setAttribute('position', { x: 0, y: .5, z: -1 });
+  endScreenEl.setAttribute('rotation', { x: 0, y: 0, z: 0});
+  endScreenEl.setAttribute('material', { color: 'black'}); 
+  endScreenEl.setAttribute('text', { value: 'Game Over!', align: 'center', font:'mozillavr', baseline: 'center', anchor:'align'}); 
+  
+  camera.appendChild(endScreenEl);
+}
+
+
+//obs event-listener
+AFRAME.registerComponent('obs-collision', {
+  schema: {
+    bound: {type:'vec3', default: {x: 1, y: 1, z: 1}},
+    player: {}
+  },
+  init: function () {
+    // decide what values we want to count as colliding 
+    this.data.bound.z = this.el.getAttribute('geometry').depth/2 + this.data.player.getAttribute('geometry').depth/2;
+    this.data.bound.x = this.el.getAttribute('geometry').width/2 + this.data.player.getAttribute('geometry').width/2;
+    
+    //console.log(this.data.bound);
+  },
+  //tick function: called every frame
+  tick: function () {
+    
+    var obsPos = this.el.getAttribute('position');
+    var plPos = this.data.player.getAttribute('position');
+    
+    //console.log(obsPos.z +'    '+ plPos.z);
+    
+    // checks for collision on z and x axis
+    if(Math.abs(obsPos.z-plPos.z) <= this.data.bound.z){
+      if(Math.abs(obsPos.x-plPos.x) <= this.data.bound.x){
+        console.log('we have a collision');
+        endGame();
+      }
+    }
+    
+  }
+});
+
+
+//terrain generator component  Note: loop terrain in this component to check z pos VS make new component for that
+AFRAME.registerComponent('obs-pool', {
+  schema: {
+    obs: {type:'array'},
+    count: {type:'int', default: 30},
+    size: {type:'number', default: 3},
+    speed: {type:'number', default: 25},
+  },
+  //init function, only called once when the component is attached 
+  init: function () {
+    
+    var sceneEl = document.querySelector('a-scene');
+    var playerEl = document.querySelector('#player');
+    
+    
+    // make the planes
+    for(var i = 0; i < this.data.count;i++) {
+      
+      var obsEl = document.createElement('a-entity');
+
+      // give it some values 
+      obsEl.setAttribute('geometry', { primitive: 'box', width: this.data.size, height: this.data.size*10, depth: this.data.size});
+      obsEl.setAttribute('position', { x: (Math.random()* 39)-20, y: (this.data.size/2), z: -((i+1)*20) });
+      obsEl.setAttribute('rotation', { x: 0, y: 0, z: 0});
+      obsEl.setAttribute('id', 'obstacle: '+(i+1)); 
+      obsEl.setAttribute('velocity', {x: 0,y: 0,z: this.data.speed} );
+      obsEl.setAttribute('obs-collision', {player: playerEl});
+      
+      var r = Math.floor(Math.random() * 256);
+      var g = Math.floor(Math.random() * 256);
+      var b = Math.floor(Math.random() * 256);
+      var colorString = 'rgb('+r+', '+g+', '+b+')';
+      
+      //give it a random color to test
+      obsEl.setAttribute('material', { color: 'black'}); 
+      
+      this.data.obs.push(obsEl);
+      
+      
+      sceneEl.appendChild(obsEl);
+    }
+  }
+});
+
+
 
 //terrain generator component  Note: loop terrain in this component to check z pos VS make new component for that
 AFRAME.registerComponent('terrain-pool', {
@@ -87,7 +188,7 @@ AFRAME.registerComponent('terrain-pool', {
     count: {type:'int', default: 7},
     width: {type:'number', default: 40},
     length: {type:'number', default: 25},
-    speed: {type:'number', default: 50}
+    speed: {type:'number', default: 25}
   },
   //init function, only called once when the component is attached 
   init: function () {
@@ -114,7 +215,7 @@ AFRAME.registerComponent('terrain-pool', {
       var colorString = 'rgb('+r+', '+g+', '+b+')';
       
       //give it a random color to test
-      terrainEl.setAttribute('material', { color: colorString}); 
+      terrainEl.setAttribute('material', { color: 'white'}); 
       
       this.data.terrains.push(terrainEl);
       
