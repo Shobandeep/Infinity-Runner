@@ -9,10 +9,11 @@ Can be run on:
 Current features:
   -player movement
   -moving enviroment
-  
-Things to add:
   -obstacles
     -collision with said obstacles
+  
+Things to add:
+
   -score keeping
   -levels
   -end/start menu
