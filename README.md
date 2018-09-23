@@ -1,3 +1,5 @@
+- ABANDONED FOR NOW (DOES NOT WORK IN ITS CURRENT STATE)
+
 # Infinity-Runner
 A-frame based game for WIC@Nassau
 http://stargate.ncc.edu/wic/
